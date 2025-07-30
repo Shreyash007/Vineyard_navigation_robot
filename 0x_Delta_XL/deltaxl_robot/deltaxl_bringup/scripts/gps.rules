@@ -1,0 +1,4 @@
+# set the udev rule , make the gps device_port fixed to ttyGPS
+#
+KERNEL=="ttyUSB*", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ATTRS{serial}=="AB0M4P4I", MODE:="0777", SYMLINK+="ttyGPS", GROUP="dialout"
+

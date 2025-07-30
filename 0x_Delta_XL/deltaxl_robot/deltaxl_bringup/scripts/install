@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo "installing remaped ports"
+sleep 1
+`rospack find deltaxl_bringup`/scripts/create_udev_rules_Robot.sh
+sleep 1
+`rospack find deltaxl_bringup`/scripts/create_udev_rules_UM7IMU.sh
+sleep 1
+`rospack find deltaxl_ur_bringup`/scripts/create_udev_rules_FT300.sh
+sleep 1
+echo "finished remapping ports "

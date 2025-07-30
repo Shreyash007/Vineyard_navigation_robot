@@ -1,0 +1,4 @@
+# set the udev rule , make the device_port fixed to ttyRazorIMU
+#
+KERNEL=="ttyUSB*", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ATTRS{serial}=="AG0JWL5L", MODE:="0777", SYMLINK+="ttyRazorIMU", GROUP="dialout"
+

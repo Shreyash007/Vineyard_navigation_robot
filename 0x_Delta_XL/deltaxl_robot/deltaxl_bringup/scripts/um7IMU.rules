@@ -1,0 +1,4 @@
+# set the udev rule , make the device_port fixed to ttyUM7IMU
+#
+KERNEL=="ttyUSB*", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ATTRS{serial}=="BG00BPVB", MODE:="0777", SYMLINK+="ttyUM7IMU", GROUP="dialout"
+

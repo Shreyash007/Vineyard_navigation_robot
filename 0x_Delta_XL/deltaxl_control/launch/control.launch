@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+    <rosparam command="load" file="$(find deltaxl_control)/config/control.yaml" />
+    
+    <node name="controller_spawner" pkg="controller_manager" type="spawner"
+        args="deltaxl_joint_publisher deltaxl_velocity_controller" />
+
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization">
+        <rosparam command="load" file="$(find deltaxl_control)/config/robot_localization.yaml" />
+    </node>
+    
+    <node pkg="twist_mux" type="twist_mux" name="twist_mux">
+        <rosparam command="load" file="$(find deltaxl_control)/config/twist_mux.yaml" />
+        <remap from="cmd_vel_out" to="deltaxl_velocity_controller/cmd_vel"/>
+    </node>
+    
+    <node pkg="interactive_marker_twist_server" type="marker_server" name="twist_marker_server" output="screen">
+    </node>
+
+</launch>

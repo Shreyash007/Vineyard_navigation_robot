@@ -1,0 +1,354 @@
+<?xml version="1.0"?>
+<robot name="deltaxl" xmlns:xacro="http://www.ros.org/wiki/ros0xrobot">
+  <xacro:property name="PI" value="3.1415926535897931" />
+	
+  <xacro:property name="wheelbase" value="0.52" />
+  <xacro:property name="front_Wheel_offset" value="0.022" />
+  <xacro:property name="track" value="0.7" />
+  <xacro:property name="wheel_vertical_offset" value="0.22" />
+  <xacro:property name="footprint_vertical_offset" value="0.14" />
+  <xacro:property name="ground_clearance" value="0.14" />
+
+  <xacro:property name="wheel_radius" value="0.22" />
+  <xacro:property name="wheel_width" value="0.090" />
+
+  <xacro:property name="chassis_length" value="0.950" />
+  <xacro:property name="chassis_width" value="0.622" />
+  <xacro:property name="chassis_height" value="0.335" />
+
+  <xacro:property name="dummy_inertia" value="1e-09"/>
+
+  <xacro:property name="sensor_arch_height" value="0.510" />
+  
+  
+  <material name="grey">
+    <color rgba="0.5 0.5 0.5 1.0"/>
+  </material>
+
+  <xacro:macro name="wheel" params="prefix *joint_pose">
+
+    <link name="${prefix}_wheel_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
+        <geometry>
+          <mesh filename="package://deltaxl_description/meshes/Wheel7.dae"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+        </geometry>
+      </collision>
+	  <inertial>
+		<origin xyz="0.00 0.00 0.00"/>
+		<mass value="2.55000000"/>
+		<inertia ixx="0.03091544" ixy="0.00000104" ixz="-0.00000191" iyy="0.03095262" iyz="0.00004298" izz="0.05849872"/>
+	  </inertial>
+    </link>
+
+    <gazebo reference="${prefix}_wheel_link">
+      <!--<material>Gazebo/DarkGrey</material> -->
+      <selfCollide>false</selfCollide>
+      <mu1 value="1"/>
+      <mu2 value="1"/>
+      <kp value="10000000.0" />
+      <kd value="1" />
+      <fdir1 value="1 0 0"/>
+    </gazebo>
+
+    <joint name="${prefix}_wheel" type="continuous">
+      <parent link="chassis_link"/>
+      <child link="${prefix}_wheel_link" />
+      <xacro:insert_block name="joint_pose" />
+      <axis xyz="0 1 0" />
+    </joint>
+
+    <!-- In reality, Jackal has only two motors, one per side. However, it's more
+         straightforward for Gazebo to simulate as if there's an actuator per wheel. -->
+    <transmission name="${prefix}_wheel_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${prefix}_wheel">
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${prefix}_actuator">
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+  </xacro:macro>
+
+  <xacro:wheel prefix="front_left">
+    <origin xyz="${wheelbase/2 - front_Wheel_offset} ${track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
+  </xacro:wheel>
+  <xacro:wheel prefix="front_right">
+    <origin xyz="${wheelbase/2 - front_Wheel_offset} ${-track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
+  </xacro:wheel>
+  <xacro:wheel prefix="rear_left">
+    <origin xyz="${-wheelbase/2} ${track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
+  </xacro:wheel>
+  <xacro:wheel prefix="rear_right">
+    <origin xyz="${-wheelbase/2} ${-track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
+  </xacro:wheel>
+  
+  <!--D455 camera--> 
+  <xacro:include filename="$(find deltaxl_description)/urdf/_d435.urdf.xacro" />
+  <xacro:sensor_d435 parent="base_link" >
+    <origin xyz="0.2 0 0.65" rpy="0 0 0" />
+  </xacro:sensor_d435>
+
+
+  
+  <!-- GPS -->
+  <xacro:include filename="$(find deltaxl_description)/urdf/mtk3339.urdf.xacro" />  
+  <xacro:sensor_gps name="gps" topic_ns="gps" parent="base_link" >
+      <origin xyz="-0.2 0 0.45" rpy="0 0 0" />
+  </xacro:sensor_gps>
+  <!-- GPS -->
+  
+  
+  <link name="base_link"></link>
+
+  <joint name="base_link_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="base_link"/>
+    <child link="chassis_link" />
+  </joint>
+  
+  <link name="chassis_link">
+    <visual>
+      <origin xyz="0 0 ${ground_clearance}" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://deltaxl_description/meshes/Delta_XL_V8.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 ${ground_clearance}" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://deltaxl_description/meshes/Delta_XL_V8.stl"/>
+      </geometry>
+    </collision>
+    <!-- <inertial> -->
+      <!-- Center of mass -->
+      <!-- <origin xyz="0.012  0.002 0.067" rpy="0 0 0"/>
+      <mass value="16.523"/> -->
+      <!-- Moments of inertia: ( chassis without wheels ) -->
+      <!-- <inertia
+        ixx="0.3136" ixy="-0.0008" ixz="0.0164"
+        iyy="0.3922" iyz="-0.0009"
+        izz="0.4485"/> -->
+    <!-- </inertial> -->
+	<inertial>
+	  <origin xyz="0.05853846 0.00000001 0.03894551"/>
+	  <mass value="60.00000000"/>
+	  <inertia ixx="2.56602417" ixy="-0.00000006" ixz="0.00000075" iyy="4.05274664" iyz="-0.00000000" izz="6.01519607"/>
+	</inertial>
+  </link>
+  
+  <link name="sensor_arch_link">
+        <visual>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+            <mesh filename="package://deltaxl_description/meshes/Arch_Full.dae" />
+          </geometry>
+        </visual>
+        <collision>
+          <origin xyz="0.04 0.00 0.35" rpy="0 0 0"/>
+          <geometry>
+            <box size="0.3 0.7 0.7"/>
+          </geometry>
+        </collision>
+  </link>
+  <!-- Attach top plate -->
+  <joint name="sensor_arch_joint" type="fixed">
+    <parent link="chassis_link" />
+    <child link="sensor_arch_link"/>
+    <origin xyz="${-chassis_length/2 + 0.1} 0 ${ground_clearance + chassis_height}" rpy="0 0 0"/>
+  </joint>
+
+  <!-- TODO: Make this internal_imu_link or something, and use a mixed-in xacro
+       to supply the joint between it and imu_link. This is important so that imu_link
+       always points to the "active" IMU. When an upgrade IMU is connected, the
+       internal_imu_link should remain, but imu_link should point to the upgrade one. -->
+  <link name="imu_link">
+    <inertial>
+      <mass value="0.001"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="${dummy_inertia}" ixy="0.0" ixz="0.0" iyy="${dummy_inertia}" iyz="0.0" izz="${dummy_inertia}"/>
+    </inertial>
+  </link>
+  <joint name="imu_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="chassis_link" />
+    <child link="imu_link" />
+  </joint> 
+
+<!-- Fake link added to use actual camera data ROSBAG
+  <link name="camera_link"></link>
+  <joint name="camera_link_joint" type="fixed">
+    <origin xyz="0.2 0 0.65" rpy="0 0 0" />
+    <parent link="base_link"/>
+    <child link="camera_link" />
+  </joint> -->
+  <!-- camera depth joints and links  
+  <link name="camera_depth_optical_frame"/>
+  <joint name="camera_depth_optical_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="-1.570796327 0 -1.570796327"/>
+      <parent link="camera_link"/>
+      <child link="camera_depth_optical_frame" />
+  </joint>-->
+
+
+
+
+  <!-- TODO: Same note as applies to imu_link -->
+  <link name="navsat_link">
+    <visual>
+      <geometry>
+        <cylinder radius="0.026" length="0.016" />
+      </geometry>
+      <origin xyz="0 0 0.008" />
+      <material name="grey" /> 
+    </visual>
+  </link>
+  <joint name="navsat_joint" type="fixed">
+    <parent link="chassis_link" />
+    <child link="navsat_link" />
+    <origin xyz="-0.180 0.126 ${ground_clearance + chassis_height}" />
+  </joint>
+
+  <link name="front_laser_mount">
+	<visual>
+      <geometry>
+        <box size="0.07 0.07 0.01"/>
+      </geometry>
+		<material name="grey"/> 
+		<origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+	<collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.07 0.07 0.01"/>
+      </geometry>
+	</collision>
+  </link>
+  <joint name="front_laser_mount_joint" type="fixed">
+    <parent link="chassis_link"/>
+    <child link="front_laser_mount"/>
+    <!-- <origin xyz="0.0 0.0 ${ground_clearance + chassis_height + 0.05}" rpy="0 0 0"/> -->
+    <origin xyz="0.443 0.0 ${ground_clearance + 0.1445}" rpy="0 0 0"/>
+  </joint>
+
+  <link name="front_laser">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://deltaxl_description/meshes/sensors/UTM_30_LX.dae" scale="1 1 1"/>
+      </geometry>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0.05" rpy="0 0 0"/>
+      <!-- <geometry>
+        <mesh filename="package://deltaxl_description/meshes/sensors/UTM_30_LX.stl" scale="1 1 1"/>
+      </geometry> -->
+      <geometry>
+        <box size="0.10 0.10 0.10"/>
+      </geometry>
+    </collision>
+    <inertial>
+          <mass value="1.1" />
+          <origin xyz="0 0 0" />
+          <inertia ixx="${0.0833333 * 1.1 * (0.102*0.102 + 0.152*0.152)}" ixy="0.0" ixz="0.0"
+            iyy="${0.0833333 * 1.1 * (0.105*0.105 + 0.152*0.152)}" iyz="0.0"
+            izz="${0.0833333 * 1.1 * (0.105*0.105 + 0.102*0.102)}" />
+        </inertial>
+  </link>
+  <joint name="front_laser_joint" type="fixed">
+    <parent link="front_laser_mount"/>
+    <child link="front_laser"/>
+    <origin xyz="0.00 0.0 0.005" rpy="0 0 0"/>
+  </joint>
+  
+  
+  <gazebo>
+		<plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+				<robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+			<legacyModeNS>true</legacyModeNS>
+		</plugin>
+	</gazebo>
+
+	<gazebo>
+		<plugin name="imu_controller" filename="libhector_gazebo_ros_imu.so">
+			<updateRate>50.0</updateRate>
+			<bodyName>imu_link</bodyName>
+			<topicName>imu/data</topicName>
+			<accelDrift>0.005 0.005 0.005</accelDrift>
+			<accelGaussianNoise>0.005 0.005 0.005</accelGaussianNoise>
+			<rateDrift>0.005 0.005 0.005 </rateDrift>
+			<rateGaussianNoise>0.005 0.005 0.005 </rateGaussianNoise>
+			<headingDrift>0.005</headingDrift>
+			<headingGaussianNoise>0.005</headingGaussianNoise>
+		</plugin>
+	</gazebo>
+
+	<gazebo reference="front_laser">
+		<turnGravityOff>true</turnGravityOff>
+		<sensor type="ray" name="front_laser">
+			<pose>0 0 0 0 0 0</pose>
+			<visualize>true</visualize>
+			<update_rate>5</update_rate>
+			<ray>
+				<scan>
+					<horizontal>
+					<samples>360</samples>
+					<resolution>1</resolution>
+					<min_angle>-1.571428</min_angle>
+					<max_angle>1.571428</max_angle>
+					</horizontal>
+				</scan>
+				<range>
+					<min>0.15</min>
+					<max>10.0</max>
+					<resolution>0.01</resolution>
+				</range>
+				<noise>
+					<type>gaussian</type>
+					<mean>0.0</mean>
+					<stddev>0.001</stddev>
+				</noise>
+			</ray>
+			<plugin name="gazebo_ros_front_laser" filename="libgazebo_ros_laser.so">
+				<topicName>front/scan</topicName>
+				<frameName>front_laser</frameName>
+			</plugin>
+		</sensor>
+	</gazebo>
+
+	<gazebo reference="base_link">
+		<turnGravityOff>false</turnGravityOff>
+	</gazebo>
+
+	<gazebo reference="chassis_link">
+		<turnGravityOff>false</turnGravityOff> 
+	</gazebo>
+  
+	<gazebo reference="sensor_arch_link">
+		<material>Gazebo/DarkGrey</material>
+		<turnGravityOff>false</turnGravityOff>
+	</gazebo>
+
+	<gazebo reference="imu_link">
+		<turnGravityOff>false</turnGravityOff>
+	</gazebo>
+
+	<gazebo reference="navsat_link">
+		<material>Gazebo/FlatBlack</material>
+		<turnGravityOff>false</turnGravityOff>
+	</gazebo>
+
+	<gazebo reference="front_laser_mount">
+		<material>Gazebo/DarkGrey</material>
+	</gazebo>
+	
+
+</robot>

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+
+	<arg name="x_pos" default="0.0"/>
+	<arg name="y_pos" default="0.0"/>
+	<arg name="z_pos" default="1.0"/>
+	<arg name="yaw" value="0.0"/>
+
+	<include file="$(find deltaxl_arena)/launch/deltaXL_vineyard_arena_01.launch" />
+
+	<include file="$(find deltaxl_gazebo)/launch/spawn_deltaXL.launch">
+		<arg name="x_pos" value="0.0"/>
+		<arg name="y_pos" value="0.0"/>
+		<arg name="z_pos" value="1.0"/>
+		<arg name="yaw" value="0.0"/>
+	</include>
+
+</launch>

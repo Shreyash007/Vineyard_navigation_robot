@@ -1,0 +1,4 @@
+# set the udev rule , make the device_port fixed to ttyRobot
+#
+KERNEL=="ttyUSB*", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ATTRS{serial}=="BG00BPVA", MODE:="0777", SYMLINK+="ttyRobotBase", GROUP="dialout"
+

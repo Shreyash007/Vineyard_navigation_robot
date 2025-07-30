@@ -1,0 +1,11 @@
+<launch>
+ 
+    <include file="$(find gps_localization)/launch/start_navsat_transform.launch" />
+ 
+    <!-- Run the ekf for map to odom config -->
+    <include file="$(find gps_localization)/launch/ekf_localization.launch" />
+ 
+    <!-- Run the map server -->
+    <include file="$(find gps_localization)/launch/start_map_server.launch" />
+ 
+</launch>
